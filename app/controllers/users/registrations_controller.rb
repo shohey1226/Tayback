@@ -18,17 +18,18 @@ class Users::RegistrationsController < Devise::RegistrationsController
         build_resource(user_params)
         if resource.save
           sign_up(resource_name, resource)
-          @user = resource
-          @success = true
+          render json: {
+            message: 'Sign up successfully',
+            token: resource.authentication_token
+          }
         else
           clean_up_passwords resource
-          @success = false
-          @errors = resource.errors
-          raise t('.invalid_signup')
+          render json: {
+            error: resource.errors.full_messages,
+          }, status: 401
+          raise
         end
-      rescue Exception => e
-        @success = false
-        @errors = e.message if @errors.blank? and not e.message.nil?
+      rescue
         raise ActiveRecord::Rollback
       end
     end

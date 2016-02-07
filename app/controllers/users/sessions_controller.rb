@@ -1,9 +1,8 @@
 class Users::SessionsController < Devise::SessionsController
-# before_filter :configure_sign_in_params, only: [:create]
+  # before_filter :configure_sign_in_params, only: [:create]
   skip_before_filter :verify_signed_out_user
-  protect_from_forgery :except => [:destroy]
+  protect_from_forgery :except => [:destroy, :create]
   acts_as_token_authentication_handler_for User
-
 
   def create
      warden.authenticate!(:scope => resource_name)
