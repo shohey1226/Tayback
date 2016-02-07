@@ -1,4 +1,15 @@
 Rails.application.routes.draw do
+
+  root to: 'welcome#index'
+
+  devise_for :users, :skip => [:sessions, :registrations, :passwords]
+  devise_scope :user do
+    post 'login' => 'users/sessions#create', :as => :login
+    delete 'logout' => 'users/sessions#destroy', :as => :logout
+    post 'register' => 'users/registrations#create', :as => :registers
+    delete 'delete_account' => 'users/registrations#destroy', :as => :delete_account
+  end
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
