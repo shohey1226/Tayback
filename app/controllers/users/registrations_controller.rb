@@ -24,8 +24,9 @@ class Users::RegistrationsController < Devise::RegistrationsController
           }
         else
           clean_up_passwords resource
+          error_message = resource.errors.nil? ? "error on server" : resource.errors.full_messages.join(',')
           render json: {
-            error: resource.errors.full_messages,
+            error: error_message
           }, status: 401
           raise
         end
