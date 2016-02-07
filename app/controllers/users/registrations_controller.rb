@@ -11,12 +11,14 @@ class Users::RegistrationsController < Devise::RegistrationsController
   #   super
   # end
 
-  # POST /register
+  # POST /register for API
   def create
     ActiveRecord::Base.transaction do
       begin
-        @user = build_resource(user_params)
+        build_resource(user_params)
         if resource.save
+          sign_up(resource_name, resource)
+          @user = resource
           @success = true
         else
           clean_up_passwords resource
@@ -30,8 +32,17 @@ class Users::RegistrationsController < Devise::RegistrationsController
         raise ActiveRecord::Rollback
       end
     end
-    #super
   end
+
+  def destroy
+    resource.destroy
+    Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name)
+  end
+
+  # POST /resource/create
+  # def create
+  #   super
+  # end
 
   # GET /resource/edit
   # def edit
