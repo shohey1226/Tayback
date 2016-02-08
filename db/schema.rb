@@ -11,7 +11,49 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160207042709) do
+ActiveRecord::Schema.define(version: 20160208004519) do
+
+  create_table "blocker_users", force: :cascade do |t|
+    t.integer  "user_id"
+    t.integer  "blocker_id"
+    t.integer  "site_id"
+    t.datetime "used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "blocker_users", ["blocker_id"], name: "index_blocker_users_on_blocker_id"
+  add_index "blocker_users", ["site_id"], name: "index_blocker_users_on_site_id"
+  add_index "blocker_users", ["user_id"], name: "index_blocker_users_on_user_id"
+
+  create_table "blockers", force: :cascade do |t|
+    t.string   "title"
+    t.text     "rule"
+    t.integer  "count"
+    t.integer  "created_by"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "site_users", force: :cascade do |t|
+    t.integer  "site_id"
+    t.integer  "user_id"
+    t.datetime "accessed_at"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+  end
+
+  add_index "site_users", ["site_id"], name: "index_site_users_on_site_id"
+  add_index "site_users", ["user_id"], name: "index_site_users_on_user_id"
+
+  create_table "sites", force: :cascade do |t|
+    t.string   "url"
+    t.string   "title"
+    t.string   "locale"
+    t.integer  "count"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false
@@ -33,11 +75,5 @@ ActiveRecord::Schema.define(version: 20160207042709) do
   add_index "users", ["authentication_token"], name: "index_users_on_authentication_token"
   add_index "users", ["email"], name: "index_users_on_email", unique: true
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
-
-  create_table "websites", force: :cascade do |t|
-    t.string   "url"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
 
 end

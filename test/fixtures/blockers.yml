@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  rule: MyText
+  count: 1
+  created_by: 1
+
+two:
+  title: MyString
+  rule: MyText
+  count: 1
+  created_by: 1

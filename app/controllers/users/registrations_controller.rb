@@ -20,7 +20,12 @@ class Users::RegistrationsController < Devise::RegistrationsController
           sign_up(resource_name, resource)
           render json: {
             message: 'Sign up successfully',
-            token: resource.authentication_token
+            data: {
+              username: resource.username,
+              email: resource.email,
+              token: resource.authentication_token,
+              urlList: resource.url_list
+            }
           }
         else
           clean_up_passwords resource
