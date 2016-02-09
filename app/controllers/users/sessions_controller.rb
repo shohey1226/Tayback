@@ -5,9 +5,27 @@ class Users::SessionsController < Devise::SessionsController
   acts_as_token_authentication_handler_for User
 
   def create
-     warden.authenticate!(:scope => resource_name)
-     @user = current_user
-     render json: {token: @user.authentication_token}
+
+    #
+    # logger.warn "*** BEGIN RAW REQUEST HEADERS ***"
+    # self.request.env.each do |header|
+    #   logger.warn "HEADER KEY: #{header[0]}"
+    #   logger.warn "HEADER VAL: #{header[1]}"
+    # end
+    # logger.warn "*** END RAW REQUEST HEADERS ***"
+
+    #resource = warden.authenticate!(:scope => resource_name, :store => is_navigational_format?)
+
+    warden.authenticate!(:scope => resource_name)
+    render json: {
+      message: 'Log in successfully',
+      data: {
+        username: current_user.username,
+        email: current_user.email,
+        token: current_user.authentication_token,
+        urlList: current_user.url_list
+      }
+    }
   end
 
   # DELETE /logout
@@ -43,4 +61,13 @@ class Users::SessionsController < Devise::SessionsController
   # def configure_sign_in_params
   #   devise_parameter_sanitizer.for(:sign_in) << :attribute
   # end
+
+  private
+    def set_user
+      @user = User.find_by(username: params[:username])
+    end
+
+    def user_params
+      params.require(:user).permit(:email, :password)
+    end
 end
