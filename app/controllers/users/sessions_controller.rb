@@ -3,6 +3,7 @@ class Users::SessionsController < Devise::SessionsController
   skip_before_filter :verify_signed_out_user
   protect_from_forgery :except => [:destroy, :create]
   acts_as_token_authentication_handler_for User
+  respond_to :json
 
   def create
 
