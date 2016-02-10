@@ -1,22 +1,13 @@
 class Users::SessionsController < Devise::SessionsController
   # before_filter :configure_sign_in_params, only: [:create]
   skip_before_filter :verify_signed_out_user
-  protect_from_forgery :except => [:destroy, :create]
+  #protect_from_forgery :except => [:destroy, :create]
+  protect_from_forgery with: :null_session
   acts_as_token_authentication_handler_for User
   respond_to :json
 
   def create
-
-    #
-    # logger.warn "*** BEGIN RAW REQUEST HEADERS ***"
-    # self.request.env.each do |header|
-    #   logger.warn "HEADER KEY: #{header[0]}"
-    #   logger.warn "HEADER VAL: #{header[1]}"
-    # end
-    # logger.warn "*** END RAW REQUEST HEADERS ***"
-
-    #resource = warden.authenticate!(:scope => resource_name, :store => is_navigational_format?)
-
+    
     warden.authenticate!(:scope => resource_name)
     render json: {
       message: 'Log in successfully',
@@ -64,11 +55,8 @@ class Users::SessionsController < Devise::SessionsController
   # end
 
   private
-    def set_user
-      @user = User.find_by(username: params[:username])
-    end
 
-    def user_params
-      params.require(:user).permit(:email, :password)
+    def login_params
+      params.require(:user).permit(:login, :password)
     end
 end
