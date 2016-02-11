@@ -2,7 +2,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
 # before_filter :configure_sign_up_params, only: [:create]
 # before_filter :configure_account_update_params, only: [:update]
 
-  protect_from_forgery :except => [:create]
+  protect_from_forgery with: :null_session
   respond_to :json
   acts_as_token_authentication_handler_for User
 
@@ -21,6 +21,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
           render json: {
             message: 'Sign up successfully',
             data: {
+              id: resource.id,
               username: resource.username,
               email: resource.email,
               token: resource.authentication_token,

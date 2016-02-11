@@ -7,11 +7,11 @@ class Users::SessionsController < Devise::SessionsController
   respond_to :json
 
   def create
-    
     warden.authenticate!(:scope => resource_name)
     render json: {
       message: 'Log in successfully',
       data: {
+        id: current_user.id,
         username: current_user.username,
         email: current_user.email,
         token: current_user.authentication_token,

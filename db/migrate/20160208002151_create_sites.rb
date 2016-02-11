@@ -4,9 +4,11 @@ class CreateSites < ActiveRecord::Migration
       t.string :url
       t.string :title
       t.string :locale
-      t.integer :count
+      t.integer :count, default: 0
 
       t.timestamps null: false
     end
+
+    add_index :sites, [:url], unique: true
   end
 end

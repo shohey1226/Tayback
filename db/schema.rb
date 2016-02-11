@@ -29,10 +29,10 @@ ActiveRecord::Schema.define(version: 20160208004519) do
   create_table "blockers", force: :cascade do |t|
     t.string   "title"
     t.text     "rule"
-    t.integer  "count"
+    t.integer  "count",      default: 0
     t.integer  "created_by"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
   create_table "site_users", force: :cascade do |t|
@@ -50,10 +50,12 @@ ActiveRecord::Schema.define(version: 20160208004519) do
     t.string   "url"
     t.string   "title"
     t.string   "locale"
-    t.integer  "count"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "count",      default: 0
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
+
+  add_index "sites", ["url"], name: "index_sites_on_url", unique: true
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false

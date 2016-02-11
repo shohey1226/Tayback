@@ -15,11 +15,17 @@ class User < ActiveRecord::Base
   attr_accessor :login
 
   def url_list
-    self.sites.order('accessed_at DESC').map{|site|
-      blockers = self.blockers.where(site: site).order('accessed_at DESC')
+    SiteUser.where(user: self).order('accessed_at DESC').map{|site_user|
+      blocker_list = []
+      BlockerUser.where(user: self, site: site_user.site).order('used_at DESC').each{|blocker_user|
+        blocker_list.push({
+          title: blocker_user.blocker.title,
+          rule: blocker_user.blocker.rule
+        })
+      }
       {
-        url: site.url,
-        blockerList: blockers
+        url: site_user.site.url,
+        blockerList: blocker_list
       }
     }
   end
