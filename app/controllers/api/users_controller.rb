@@ -32,6 +32,8 @@ class Api::UsersController < ApiController
   #   *) if exists, increment the site count
   #   *) if not, create url and add the relation to the user
   def create
+
+    blocker = nil
     begin
       ActiveRecord::Base.transaction do
 
@@ -74,7 +76,7 @@ class Api::UsersController < ApiController
 
     render json: {
       message: "completed successfully",
-      data: current_user.url_list
+      data: blocker,
     }
 
     # @api_blocker = Blocker.new(api_blocker_params)

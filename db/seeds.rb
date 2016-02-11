@@ -1,7 +1,8 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
-#
-# Examples:
-#
-#   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
-#   Mayor.create(name: 'Emanuel', city: cities.first)
+Blocker.create!([
+  {title: "Block all images", rule: "[{\"action\":{\"type\":\"block\"},\"trigger\":{\"url-filter\":\".*\",\"resource-type\":[\"image\"]}}]", count: 0, created_by: 1},
+  {title: "Block third-party", rule: "[{\"action\":{\"type\":\"block\"},\"trigger\":{\"url-filter\":\".*\",\"load-type\":[\"third-party\"]}}]", count: 0, created_by: 1},
+  {title: "Block all images and webfont", rule: "[{\"action\":{\"type\":\"block\"},\"trigger\":{\"url-filter\":\".*\",\"resource-type\":[\"image\",\"font\"]}}]", count: 0, created_by: 1},
+])
+Site.create!([
+  {url: "http://yahoo.co.jp", title: nil, locale: nil, count: 3}
+])
