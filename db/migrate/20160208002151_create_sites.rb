@@ -9,6 +9,6 @@ class CreateSites < ActiveRecord::Migration
       t.timestamps null: false
     end
 
-    add_index :sites, [:url], unique: true
+    add_index :sites, [:url, :locale], unique: true
   end
 end

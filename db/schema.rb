@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160208004519) do
+ActiveRecord::Schema.define(version: 20160208004202) do
 
   create_table "blocker_users", force: :cascade do |t|
     t.integer  "user_id"
@@ -55,7 +55,7 @@ ActiveRecord::Schema.define(version: 20160208004519) do
     t.datetime "updated_at",             null: false
   end
 
-  add_index "sites", ["url"], name: "index_sites_on_url", unique: true
+  add_index "sites", ["url", "locale"], name: "index_sites_on_url_and_locale", unique: true
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "", null: false
