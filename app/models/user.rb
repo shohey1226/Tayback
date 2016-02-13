@@ -47,13 +47,13 @@ class User < ActiveRecord::Base
   end
 
   def url_list
-    SiteUser.where(user: self).order('accessed_at DESC').map{|site_user|
-      blocker_list = []
-      BlockerUser.where(user: self, site: site_user.site).order('used_at DESC').each{|blocker_user|
-        blocker_list.push({
-          title: blocker_user.blocker.title,
-          rule: blocker_user.blocker.rule
-        })
+    self.site_users.map{|site_user|
+      blocker_ids = self.blocker_users.where(site: site_user.site).map(&:blocker_id)
+      blocker_list = Blocker.where(id: blocker_ids).map{|blocker|
+        {
+          title: blocker.title,
+          rule: blocker.rule
+        }
       }
       {
         url: site_user.site.url,
