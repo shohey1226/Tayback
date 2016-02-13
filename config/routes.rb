@@ -12,7 +12,10 @@ Rails.application.routes.draw do
   end
 
   namespace :api do
-    resources :users
+    namespace :me do
+      resource :blockers, only: [:destroy]
+      resources :url_list, only: [ :create ]
+    end
   end
 
   # The priority is based upon order of creation: first created -> highest priority.
