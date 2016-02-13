@@ -8,6 +8,7 @@ class Users::SessionsController < Devise::SessionsController
 
   def create
     warden.authenticate!(:scope => resource_name)
+    current_user.update!(locale: login_params[:locale])
     render json: {
       message: 'Log in successfully',
       data: {
@@ -15,6 +16,7 @@ class Users::SessionsController < Devise::SessionsController
         username: current_user.username,
         email: current_user.email,
         token: current_user.authentication_token,
+        locale: current_user.locale,
         urlList: current_user.url_list
       }
     }
@@ -57,6 +59,6 @@ class Users::SessionsController < Devise::SessionsController
   private
 
     def login_params
-      params.require(:user).permit(:login, :password)
+      params.require(:user).permit(:login, :password, :locale)
     end
 end

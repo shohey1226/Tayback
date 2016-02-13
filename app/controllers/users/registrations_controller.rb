@@ -25,6 +25,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
               username: resource.username,
               email: resource.email,
               token: resource.authentication_token,
+              locale: resource.locale,
               urlList: resource.url_list
             }
           }
@@ -100,6 +101,6 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   private
     def user_params
-      params.require(:user).permit(:username, :email, :password)
+      params.require(:user).permit(:username, :email, :password, :locale)
     end
 end

@@ -72,6 +72,7 @@ ActiveRecord::Schema.define(version: 20160208004202) do
     t.datetime "updated_at",                          null: false
     t.string   "authentication_token"
     t.string   "username"
+    t.string   "locale"
   end
 
   add_index "users", ["authentication_token"], name: "index_users_on_authentication_token"
