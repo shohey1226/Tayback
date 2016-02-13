@@ -1,12 +1,23 @@
 class Api::Me::BlockersController < ApiController
   before_action :set_api_user_blocker, only: [:update ]
 
-  # GET /api/me/blockers
-  def index
-    @api_blockers = Blocker.all
+  # PUT /api/me/blockers
+  def update
+    blocker = current_user.update_blocker(blocker_params)
+    if blocker.present?
+      render json: {
+        message: "updating blocker completed successfully",
+        data: blocker
+      }
+    else
+      render json: {
+        error: "Failed to update blocker(ID:#{blocker_params[:id]})",
+      }, status: 404
+    end
+
   end
 
-  # DELETE /api/me/blockers/1
+  # DELETE /api/me/blockers
   def destroy
     if current_user.delete_blocker_relation(blocker_params[:id])
       render json: {

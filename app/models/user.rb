@@ -46,11 +46,23 @@ class User < ActiveRecord::Base
     self.blocker_users.find_by(blocker: blocker).update!(used_at: Time.now, site: site)
   end
 
+  # update only if it's mine
+  def update_blocker(blocker_params)
+    my_blocker = Blocker.find_by(created_by: self, id: blocker_params[:id])
+    if my_blocker.present?
+      my_blocker.update(title: blocker_params[:title], rule: blocker_params[:rule])
+      my_blocker
+    else
+      nil
+    end
+  end
+
   def url_list
     self.site_users.map{|site_user|
       blocker_ids = self.blocker_users.where(site: site_user.site).map(&:blocker_id)
-      blocker_list = Blocker.where(id: blocker_ids).map{|blocker|
+      blocker_list = Blocker.where(id: blocker_ids).index_by(&:id).values_at(*blocker_ids).map{|blocker|
         {
+          id: blocker.id,
           title: blocker.title,
           rule: blocker.rule
         }
