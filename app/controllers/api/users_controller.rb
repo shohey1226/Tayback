@@ -32,7 +32,6 @@ class Api::UsersController < ApiController
   #   *) if exists, increment the site count
   #   *) if not, create url and add the relation to the user
   def create
-
     blocker = nil
     begin
       ActiveRecord::Base.transaction do
@@ -41,62 +40,18 @@ class Api::UsersController < ApiController
         site = current_user.find_or_create_site(site_params)
         site.increment!(:count)
         current_user.make_blocker_site_relation(blocker, site)
-
-        #
-        # if blocker_params[:id].present?
-        #   blocker = Blocker.find_by_id(blocker_params[:id])
-        #   if blocker.present?
-        #     blocker.increment!(:count)
-        #   else
-        #     blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], count: 1, created_by: current_user.id)
-        #   end
-        #   my_blocker = current_user.blockers.find_by_id(blocker.id)
-        #   if my_blocker.blank?
-        #     current_user.blockers << blocker
-        #   end
-        #   BlockerUser.find_by(user: current_user, blocker: blocker).update!(used_at: Time.now)
-        # end
-        #
-        #
-        # if site_params[:url].present?
-        #   site = Site.find_by_url(site_params[:url])
-        #   if site.present?
-        #     site.increment!(:count)
-        #   else
-        #     site = Site.create!(url: site_params[:url], count: 1)
-        #   end
-        #    my_site = current_user.sites.find_by_id(site.id)
-        #    if my_site.blank?
-        #      current_user.sites << site
-        #    end
-        #    SiteUser.find_by(user: current_user, site: site).update(accessed_at: Time.now)
-        #    BlockerUser.find_by(user: current_user, blocker: blocker).update!(site: site) if blocker.present?
-        # end
       end
-
     rescue => e
       puts e.message
       render json: {
         error: "failed the action"
       }, status: 401
     end
-
+    
     render json: {
       message: "completed successfully",
       data: blocker,
     }
-
-    # @api_blocker = Blocker.new(api_blocker_params)
-    # @site = site.find_or_create_by(api_site_params)
-    #
-    # respond_to do |format|
-    #   if @api_site.save && @api_blocker.save && @api_site.increment(:count) && @api_blocker.increment!(:count) && current_user.blockers << @api_blocker &&
-    #     format.json { render :show, status: :created, location: @api_blocker }
-    #   else
-    #     format.json { render json: @api_blocker.errors, status: :unprocessable_entity }
-    #   end
-    # end
-
   end
 
   # PATCH/PUT /api/blockers/1
