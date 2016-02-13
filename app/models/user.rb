@@ -14,6 +14,29 @@ class User < ActiveRecord::Base
 
   attr_accessor :login
 
+  def find_or_create_blocker(blocker_params)
+    blocker = blocker_params[:id].present? ? Blocker.find_by_id(blocker_params[:id]) : nil
+    unless blocker.present?
+      blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], count: 1, created_by: self.id)
+    end
+    return blocker
+  end
+
+  def find_or_create_site(site_params)
+    site = site_params[:url].present? ? Site.find_by(url: site_params[:url], locale: self.locale) : nil
+    unless site.present?
+      site = Site.create!(url: site_params[:url], locale: self.locale, count: 1)
+    end
+    return site
+  end
+
+  def make_blocker_site_relation(blocker, site)
+    self.sites << site if self.sites.find_by_id(site.id).blank?
+    SiteUser.find_by(user: self, site: site).update(accessed_at: Time.now)
+    self.blockers << blocker if self.blockers.find_by_id(blocker.id).blank?
+    BlockerUser.find_by(user: self, blocker: blocker).update!(used_at: Time.now, site: site)
+  end
+
   def url_list
     SiteUser.where(user: self).order('accessed_at DESC').map{|site_user|
       blocker_list = []
