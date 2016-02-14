@@ -14,6 +14,16 @@ class User < ActiveRecord::Base
 
   attr_accessor :login
 
+  def get_urls
+    urls = Site.where(locale: self.locale).order('count DESC').limit(50)
+    .map{|site| { url: site.url } }
+    if urls.blank?
+      []
+    else
+      urls
+    end
+  end
+
   def delete_blocker_relation(blocker_id)
     blocker = self.blocker_users.find_by(blocker: blocker_id)
     if blocker.present?
@@ -22,6 +32,8 @@ class User < ActiveRecord::Base
       false
     end
   end
+
+
 
   def find_or_create_blocker(blocker_params)
     blocker = blocker_params[:id].present? ? Blocker.find_by_id(blocker_params[:id]) : nil

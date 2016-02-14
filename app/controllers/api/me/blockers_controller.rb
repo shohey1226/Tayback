@@ -1,6 +1,15 @@
 class Api::Me::BlockersController < ApiController
   before_action :set_api_user_blocker, only: [:update ]
 
+  # GET /api/me/blockers
+  def index
+    urls = current_user.get_urls()
+    render json: {
+      message: "getting URLs completed successfully",
+      data: urls
+    }
+  end
+
   # PUT /api/me/blockers
   def update
     blocker = current_user.update_blocker(blocker_params)
@@ -14,7 +23,6 @@ class Api::Me::BlockersController < ApiController
         error: "Failed to update blocker(ID:#{blocker_params[:id]})",
       }, status: 404
     end
-
   end
 
   # DELETE /api/me/blockers
