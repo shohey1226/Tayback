@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :me do
       resources :blockers, only: [:index, :destroy, :update ]
+      resources :sites, only: [ :index ]      
       resources :url_list, only: [ :create ]
     end
   end

@@ -24,6 +24,23 @@ class User < ActiveRecord::Base
     end
   end
 
+  def get_blockers(url)
+    site = Site.find_by(locale: self.locale, url: url)
+    if site.present?
+      blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id)
+      Blocker.where(id: blocker_ids).order('count DESC').map{|blocker|
+        {
+          id: blocker.id,
+          title: blocker.title,
+          rule: blocker.rule,
+          count: blocker.count
+        }
+      }
+    else
+      []
+    end
+  end
+
   def delete_blocker_relation(blocker_id)
     blocker = self.blocker_users.find_by(blocker: blocker_id)
     if blocker.present?
@@ -72,6 +89,7 @@ class User < ActiveRecord::Base
   def url_list
     self.site_users.map{|site_user|
       blocker_ids = self.blocker_users.where(site: site_user.site).map(&:blocker_id)
+      # to keep the order, use the below
       blocker_list = Blocker.where(id: blocker_ids).index_by(&:id).values_at(*blocker_ids).map{|blocker|
         {
           id: blocker.id,

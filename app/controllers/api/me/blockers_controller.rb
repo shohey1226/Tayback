@@ -3,10 +3,10 @@ class Api::Me::BlockersController < ApiController
 
   # GET /api/me/blockers
   def index
-    urls = current_user.get_urls()
+    blockers = current_user.get_blockers(params[:url])
     render json: {
-      message: "getting URLs completed successfully",
-      data: urls
+      message: "getting Blockers completed successfully",
+      data: blockers
     }
   end
 
