@@ -26,9 +26,24 @@ class User < ActiveRecord::Base
 
   def get_blockers(url)
     site = Site.find_by(locale: self.locale, url: url)
+    blockers = []
     if site.present?
       blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id)
-      Blocker.where(id: blocker_ids).order('count DESC').map{|blocker|
+      blockers = Blocker.where(id: blocker_ids).order('count DESC').map{|blocker|
+        {
+          id: blocker.id,
+          title: blocker.title,
+          rule: blocker.rule,
+          count: blocker.count
+        }
+      } if blocker_ids.present? && blocker_ids.count > 0
+    end
+
+    # add default blockers if it's not included yet
+    default_blocker_ids = [1,2,3]
+    adding_blocker_ids = default_blocker_ids - (blocker_ids & default_blocker_ids)
+    blockers.concat(
+      Blocker.where(id: adding_blocker_ids).map{|blocker|
         {
           id: blocker.id,
           title: blocker.title,
@@ -36,9 +51,9 @@ class User < ActiveRecord::Base
           count: blocker.count
         }
       }
-    else
-      []
-    end
+    ) if adding_blocker_ids.count > 0
+
+    return blockers
   end
 
   def delete_blocker_relation(blocker_id)
