@@ -34,7 +34,8 @@ class User < ActiveRecord::Base
           id: blocker.id,
           title: blocker.title,
           rule: blocker.rule,
-          count: blocker.count
+          count: blocker.count,
+          owner: blocker.created_by,
         }
       } if blocker_ids.present? && blocker_ids.count > 0
     end
@@ -48,7 +49,8 @@ class User < ActiveRecord::Base
           id: blocker.id,
           title: blocker.title,
           rule: blocker.rule,
-          count: blocker.count
+          count: blocker.count,
+          owner: blocker.created_by,
         }
       }
     ) if adding_blocker_ids.count > 0
@@ -109,7 +111,9 @@ class User < ActiveRecord::Base
         {
           id: blocker.id,
           title: blocker.title,
-          rule: blocker.rule
+          rule: blocker.rule,
+          count: blocker.count,
+          owner: blocker.created_by,          
         }
       }
       {
