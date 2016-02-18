@@ -27,21 +27,18 @@ class User < ActiveRecord::Base
   def get_blockers(url)
     site = Site.find_by(locale: self.locale, url: url)
     blockers = []
+    blocker_ids = []
     if site.present?
       blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id)
-      if blocker_ids.present? && blocker_ids.count > 0
-        blockers = Blocker.where(id: blocker_ids).order('count DESC').map{|blocker|
-          {
-            id: blocker.id,
-            title: blocker.title,
-            rule: blocker.rule,
-            count: blocker.count,
-            owner: blocker.created_by,
-          }
+      blockers = Blocker.where(id: blocker_ids).order('count DESC').map{|blocker|
+        {
+          id: blocker.id,
+          title: blocker.title,
+          rule: blocker.rule,
+          count: blocker.count,
+          owner: blocker.created_by,
         }
-      else
-        blocker_ids = []
-      end
+        } if blocker_ids.present? && blocker_ids.count > 0
     end
 
     # add default blockers if it's not included yet
