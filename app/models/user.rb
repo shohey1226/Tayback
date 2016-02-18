@@ -29,15 +29,19 @@ class User < ActiveRecord::Base
     blockers = []
     if site.present?
       blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id)
-      blockers = Blocker.where(id: blocker_ids).order('count DESC').map{|blocker|
-        {
-          id: blocker.id,
-          title: blocker.title,
-          rule: blocker.rule,
-          count: blocker.count,
-          owner: blocker.created_by,
+      if blocker_ids.present? && blocker_ids.count > 0
+        blockers = Blocker.where(id: blocker_ids).order('count DESC').map{|blocker|
+          {
+            id: blocker.id,
+            title: blocker.title,
+            rule: blocker.rule,
+            count: blocker.count,
+            owner: blocker.created_by,
+          }
         }
-      } if blocker_ids.present? && blocker_ids.count > 0
+      else
+        blocker_ids = []
+      end
     end
 
     # add default blockers if it's not included yet
@@ -113,7 +117,7 @@ class User < ActiveRecord::Base
           title: blocker.title,
           rule: blocker.rule,
           count: blocker.count,
-          owner: blocker.created_by,          
+          owner: blocker.created_by,
         }
       }
       {
