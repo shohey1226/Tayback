@@ -119,7 +119,8 @@ class User < ActiveRecord::Base
       }
       {
         url: site_user.site.url,
-        blockerList: blocker_list
+        count: site_user.site.count,
+        blockerList: blocker_list,
       }
     }
   end
