@@ -112,7 +112,7 @@ class User < ActiveRecord::Base
         {
           id: blocker.id,
           title: blocker.title,
-          rule: blocker.rule,
+          rule: JSON.parse(blocker.rule),
           count: blocker.count,
           owner: blocker.created_by,
         }
