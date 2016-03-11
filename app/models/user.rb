@@ -123,7 +123,7 @@ class User < ActiveRecord::Base
         count: site_user.site.count,
         blockerList: blocker_list,
       }
-    }
+    }.compact
   end
 
   def self.find_first_by_auth_conditions(warden_conditions)
