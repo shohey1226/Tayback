@@ -106,6 +106,7 @@ class User < ActiveRecord::Base
 
   def url_list
     self.site_users.map{|site_user|
+      next if site_user.site.locale != self.locale
       blocker_ids = self.blocker_users.where(site: site_user.site).map(&:blocker_id)
       # to keep the order, use the below
       blocker_list = Blocker.where(id: blocker_ids).index_by(&:id).values_at(*blocker_ids).map{|blocker|
