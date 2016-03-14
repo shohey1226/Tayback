@@ -17,10 +17,10 @@ class Api::Me::UrlListController < ApiController
   #   *) if not, create url and add the relation to the user
   def create
     blocker = nil
+    site = nil
     begin
       ActiveRecord::Base.transaction do
         blocker = current_user.find_or_create_blocker(blocker_params)
-        blocker.increment!(:count)
         site = current_user.find_or_create_site(site_params)
         site.increment!(:count)
         current_user.make_blocker_site_relation(blocker, site)
@@ -32,12 +32,28 @@ class Api::Me::UrlListController < ApiController
       }, status: 401
     end
 
-    render json: {
-      message: "completed successfully",
-      data: blocker,
-    }
+    if blocker.nil?
+      render json: {
+        message: "blocker not found",
+      }, status: 404
+    elsif site.nil?
+      render json: {
+        message: "site not found",
+      }, status: 404
+    else
+      render json: {
+        message: "completed successfully",
+        data: {
+          id: blocker.id,
+          title: blocker.title,
+          rule: blocker.rule,
+          count: site.blocker_count(blocker.id),
+          owner: blocker.owner
+        },
+      }
+    end
   end
-  
+
 
   private
     # Use callbacks to share common setup or constraints between actions.
