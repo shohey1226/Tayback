@@ -73,11 +73,7 @@ class User < ActiveRecord::Base
   def find_or_create_blocker(blocker_params)
     blocker = blocker_params[:id].present? ? Blocker.find_by_id(blocker_params[:id]) : nil
     if blocker.blank?
-      if blocker_params[:id].present? && blocker_params[:id].match(/default/)
-        blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], created_by: nil)
-      else
-        blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], created_by: self.id)
-      end
+      blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], created_by: self.id)
     end
     return blocker
   end
