@@ -29,10 +29,9 @@ ActiveRecord::Schema.define(version: 20160208004202) do
   create_table "blockers", force: :cascade do |t|
     t.string   "title"
     t.text     "rule"
-    t.integer  "count",      default: 0
     t.integer  "created_by"
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "site_users", force: :cascade do |t|

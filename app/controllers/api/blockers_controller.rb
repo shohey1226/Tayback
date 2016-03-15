@@ -32,20 +32,19 @@ class Api::BlockersController < ApiController
         @site = site.find_or_create_by!(api_site_params)
         p @site
         @site.increment!(:count)
-        @blocker.increment!(:count)
         current_user.blockers << @api_blocker
         current_user.sites << @site
         BlockerUser.find_by(user: current_user, blocker: @blocker).update!()
       end
     rescue => e
-
+      p e
     end
 
     @api_blocker = Blocker.new(api_blocker_params)
     @site = site.find_or_create_by(api_site_params)
 
     respond_to do |format|
-      if @api_site.save && @api_blocker.save && @api_site.increment(:count) && @api_blocker.increment!(:count) && current_user.blockers << @api_blocker &&
+      if @api_site.save && @api_blocker.save && @api_site.increment(:count) && current_user.blockers << @api_blocker &&
         format.json { render :show, status: :created, location: @api_blocker }
       else
         format.json { render json: @api_blocker.errors, status: :unprocessable_entity }

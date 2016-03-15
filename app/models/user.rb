@@ -35,26 +35,26 @@ class User < ActiveRecord::Base
           id: blocker.id,
           title: blocker.title,
           rule: blocker.rule,
-          count: blocker.count,
+          count: site.blocker_count(blocker.id),
           owner: blocker.created_by,
         }
         } if blocker_ids.present? && blocker_ids.count > 0
     end
 
-    # add default blockers if it's not included yet
-    default_blocker_ids = [1,2,3]
-    adding_blocker_ids = default_blocker_ids - (blocker_ids & default_blocker_ids)
-    blockers.concat(
-      Blocker.where(id: adding_blocker_ids).map{|blocker|
-        {
-          id: blocker.id,
-          title: blocker.title,
-          rule: blocker.rule,
-          count: blocker.count,
-          owner: blocker.created_by,
-        }
-      }
-    ) if adding_blocker_ids.count > 0
+    # # add default blockers if it's not included yet
+    # default_blocker_ids = [1,2,3]
+    # adding_blocker_ids = default_blocker_ids - (blocker_ids & default_blocker_ids)
+    # blockers.concat(
+    #   Blocker.where(id: adding_blocker_ids).map{|blocker|
+    #     {
+    #       id: blocker.id,
+    #       title: blocker.title,
+    #       rule: blocker.rule,
+    #       count: blocker.count,
+    #       owner: blocker.created_by,
+    #     }
+    #   }
+    # ) if adding_blocker_ids.count > 0
 
     return blockers
   end
@@ -118,8 +118,8 @@ class User < ActiveRecord::Base
           id: blocker.id,
           title: blocker.title,
           rule: JSON.parse(blocker.rule),
-          count: blocker.count,
-          owner: blocker.created_by,
+          count: site_user.site.blocker_count(blocker.id),
+          owner: blocker.owner,
         }
       }
       {
