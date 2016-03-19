@@ -39,6 +39,17 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 
+# Sidekiq for async processing
+gem 'sidekiq'
+gem 'redis-namespace'
+
+# Redis
+gem 'redis', '~>3.2'
+
+# Scraping
+gem 'mechanize'
+gem 'nokogiri'
+
 # Auth
 gem 'devise'
 gem 'simple_token_authentication', '~> 1.0'
