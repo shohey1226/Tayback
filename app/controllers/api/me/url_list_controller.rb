@@ -54,7 +54,6 @@ class Api::Me::UrlListController < ApiController
     end
   end
 
-
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_api_blocker
@@ -63,7 +62,7 @@ class Api::Me::UrlListController < ApiController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def blocker_params
-      params.require(:blocker).permit(:id, :title, :rule, :created_by)
+      params.require(:blocker).permit(:id, :title, :rule, :user_id)
     end
 
     def site_params

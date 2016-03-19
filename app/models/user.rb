@@ -27,19 +27,25 @@ class User < ActiveRecord::Base
   def get_blockers(url)
     site = Site.find_by(locale: self.locale, url: url)
     blockers = []
-    blocker_ids = []
     if site.present?
-      blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id)
-      blockers = Blocker.where(id: blocker_ids).order('count DESC').map{|blocker|
+      blocker_ids = []
+      blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id) + Blocker.where.not(rule_type: 0).map(&:id)
+      blocker_ids.uniq!
+      blockers = Blocker.where(id: blocker_ids).includes(:user).map{|blocker|
         {
           id: blocker.id,
           title: blocker.title,
-          rule: blocker.rule,
+          rule: blocker.generate_rule(url),
           count: site.blocker_count(blocker.id),
-          owner: blocker.created_by,
+          owner: blocker.user,
         }
-        } if blocker_ids.present? && blocker_ids.count > 0
+      } if blocker_ids.present? && blocker_ids.count > 0
+
+      #
+
+
     end
+
 
     # # add default blockers if it's not included yet
     # default_blocker_ids = [1,2,3]
@@ -51,7 +57,7 @@ class User < ActiveRecord::Base
     #       title: blocker.title,
     #       rule: blocker.rule,
     #       count: blocker.count,
-    #       owner: blocker.created_by,
+    #       owner: blocker.user,
     #     }
     #   }
     # ) if adding_blocker_ids.count > 0
@@ -73,7 +79,7 @@ class User < ActiveRecord::Base
   def find_or_create_blocker(blocker_params)
     blocker = blocker_params[:id].present? ? Blocker.find_by_id(blocker_params[:id]) : nil
     if blocker.blank?
-      blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], created_by: self.id)
+      blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], user_id: self.id)
     end
     return blocker
   end
@@ -95,7 +101,7 @@ class User < ActiveRecord::Base
 
   # update only if it's mine
   def update_blocker(blocker_params)
-    my_blocker = Blocker.find_by(created_by: self, id: blocker_params[:id])
+    my_blocker = Blocker.find_by(user_id: self, id: blocker_params[:id])
     if my_blocker.present?
       my_blocker.update(title: blocker_params[:title], rule: blocker_params[:rule])
       my_blocker

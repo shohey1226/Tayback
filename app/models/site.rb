@@ -17,10 +17,10 @@ class Site < ActiveRecord::Base
 
       page.search("//script/@src").each{|script_src|
         begin
-          script = agent.get(script_src.value)
-          next if script.header["content-type"].blank? || script.header["content-length"].blank?
-          content_length = script.header["content-length"].to_i
-          content_type = script.header["content-type"]
+          script_header = agent.head(script_src.value)
+          next if script_header["content-type"].blank? || script_header["content-length"].blank?
+          content_length = script_header["content-length"].to_i
+          content_type = script_header["content-type"]
           data[content_type][script_src.value] = content_length
           sum += content_length if content_type =~ /script/
         rescue Exception => e
@@ -31,10 +31,10 @@ class Site < ActiveRecord::Base
       # data = { content-type => { url => length }}
       page.search("//img/@src").each{|img|
         begin
-          image = agent.get(img.value)
-          next if image.header["content-type"].blank? || image.header["content-length"].blank?
-          content_length = image.header["content-length"].to_i
-          content_type = image.header["content-type"]
+          image_header = agent.head(img.value)
+          next if image_header["content-type"].blank? || image_header["content-length"].blank?
+          content_length = image_header["content-length"].to_i
+          content_type = image_header["content-type"]
           data[content_type][img.value] = content_length
           sum += content_length if content_type =~ /image/
         rescue Exception => e
@@ -44,10 +44,10 @@ class Site < ActiveRecord::Base
 
       page.search("//link/@href").each{|style_href|
         begin
-          style = agent.get(style_href.value)
-          next if style.header["content-type"].blank? || style.header["content-length"].blank?
-          content_length = style.header["content-length"].to_i
-          content_type = style.header["content-type"]
+          style_header = agent.head(style_href.value)
+          next if style_header["content-type"].blank? || style_header["content-length"].blank?
+          content_length = style_header["content-length"].to_i
+          content_type = style_header["content-type"]
           data[content_type][style_href.value] = content_length
           sum += content_length if content_type =~ /css/
         rescue Exception => e

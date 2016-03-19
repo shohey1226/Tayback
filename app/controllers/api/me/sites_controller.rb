@@ -17,7 +17,7 @@ class Api::Me::SitesController < ApiController
     url.sub(/(\/)+$/, '')
     if uri?(url)
       begin
-        site = Site.find_or_create_by(url: url)
+        site = Site.find_or_create_by(url: url, locale: current_user.locale)
         SizeScraper.perform_async(site.id)
       rescue ActiveRecord::RecordNotUnique
         render json: {

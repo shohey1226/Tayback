@@ -46,7 +46,7 @@ class Api::Me::BlockersController < ApiController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def blocker_params
-      params.require(:blocker).permit(:id, :title, :rule, :created_by)
+      params.require(:blocker).permit(:id, :title, :rule, :user_id)
     end
 
 end

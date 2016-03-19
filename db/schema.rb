@@ -29,10 +29,14 @@ ActiveRecord::Schema.define(version: 20160208004202) do
   create_table "blockers", force: :cascade do |t|
     t.string   "title"
     t.text     "rule"
-    t.integer  "created_by"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.integer  "user_id"
+    t.integer  "upper_limit"
+    t.integer  "rule_type",   default: 0
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
   end
+
+  add_index "blockers", ["user_id"], name: "index_blockers_on_user_id"
 
   create_table "site_users", force: :cascade do |t|
     t.integer  "site_id"
