@@ -32,6 +32,8 @@ class User < ActiveRecord::Base
       blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id) + Blocker.where.not(rule_type: 0).map(&:id)
       blocker_ids.uniq!
       blockers = Blocker.where(id: blocker_ids).includes(:user).map{|blocker|
+        rule = blocker.generate_rule(url)
+        next if rule.nil?
         {
           id: blocker.id,
           title: blocker.title,
@@ -62,7 +64,7 @@ class User < ActiveRecord::Base
     #   }
     # ) if adding_blocker_ids.count > 0
 
-    return blockers
+    return blockers.compact
   end
 
   def delete_blocker_relation(blocker_id)
@@ -119,7 +121,7 @@ class User < ActiveRecord::Base
         {
           id: blocker.id,
           title: blocker.title,
-          rule: JSON.parse(blocker.rule),
+          rule: JSON.parse(blocker.generate_rule(site_user.site.url)),
           count: site_user.site.blocker_count(blocker.id),
           owner: blocker.owner,
         }

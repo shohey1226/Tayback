@@ -21,7 +21,7 @@ class Site < ActiveRecord::Base
           next if script_header["content-type"].blank? || script_header["content-length"].blank?
           content_length = script_header["content-length"].to_i
           content_type = script_header["content-type"]
-          data[content_type][script_src.value] = content_length
+          data[content_type][URI.parse(script_src.value).path] = content_length
           sum += content_length if content_type =~ /script/
         rescue Exception => e
           p e
@@ -35,7 +35,7 @@ class Site < ActiveRecord::Base
           next if image_header["content-type"].blank? || image_header["content-length"].blank?
           content_length = image_header["content-length"].to_i
           content_type = image_header["content-type"]
-          data[content_type][img.value] = content_length
+          data[content_type][URI.parse(img.value).path] = content_length
           sum += content_length if content_type =~ /image/
         rescue Exception => e
           p e
@@ -48,7 +48,7 @@ class Site < ActiveRecord::Base
           next if style_header["content-type"].blank? || style_header["content-length"].blank?
           content_length = style_header["content-length"].to_i
           content_type = style_header["content-type"]
-          data[content_type][style_href.value] = content_length
+          data[content_type][URI.parse(style_href.value).path] = content_length
           sum += content_length if content_type =~ /css/
         rescue Exception => e
           p e

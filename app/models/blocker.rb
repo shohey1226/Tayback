@@ -49,7 +49,11 @@ class Blocker < ActiveRecord::Base
           }
         end
       end
-      rule.to_s
+      if rule.size == 0
+        nil
+      else
+        rule.to_json
+      end
     end
   end
 
