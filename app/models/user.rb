@@ -32,12 +32,12 @@ class User < ActiveRecord::Base
       blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id) + Blocker.where.not(rule_type: 0).map(&:id)
       blocker_ids.uniq!
       blockers = Blocker.where(id: blocker_ids).includes(:user).map{|blocker|
-        rule = blocker.generate_rule(url)
+        rule = blocker.generate_rule(url, self.locale)
         next if rule.nil?
         {
           id: blocker.id,
           title: blocker.title,
-          rule: blocker.generate_rule(url),
+          rule: blocker.generate_rule(url, self.locale),
           count: site.blocker_count(blocker.id),
           owner: blocker.user,
         }
@@ -121,7 +121,7 @@ class User < ActiveRecord::Base
         {
           id: blocker.id,
           title: blocker.title,
-          rule: JSON.parse(blocker.generate_rule(site_user.site.url)),
+          rule: JSON.parse(blocker.generate_rule(site_user.site.url, self.locale)),
           count: site_user.site.blocker_count(blocker.id),
           owner: blocker.owner,
         }

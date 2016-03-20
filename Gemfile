@@ -49,6 +49,7 @@ gem 'redis', '~>3.2'
 # Scraping
 gem 'mechanize'
 gem 'nokogiri'
+gem 'addressable' # handle uri properly
 
 # Auth
 gem 'devise'

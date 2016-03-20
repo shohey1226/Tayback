@@ -41,13 +41,12 @@ class Api::Me::UrlListController < ApiController
         message: "site not found",
       }, status: 404
     else
-      
       render json: {
         message: "completed successfully",
         data: {
           id: blocker.id,
           title: blocker.title,
-          rule: blocker.generate_rule(site.url),
+          rule: blocker.generate_rule(site.url, current_user.locale),
           count: site.blocker_count(blocker.id),
           owner: blocker.user
         },

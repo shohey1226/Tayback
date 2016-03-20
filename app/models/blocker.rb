@@ -7,11 +7,11 @@ class Blocker < ActiveRecord::Base
     self.user
   end
 
-  def generate_rule(url)
+  def generate_rule(url, locale)
     if self.static?
       self.rule
     else
-      site_string = redis.get(url)
+      site_string = redis.hget(url, locale)
       rule = []
       if site_string.present?
         site = JSON.parse(site_string)

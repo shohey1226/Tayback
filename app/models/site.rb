@@ -6,11 +6,20 @@ class Site < ActiveRecord::Base
     self.blockers.where(id: blocker_id).count
   end
 
-  def scrape
+  def scrape(locale)
     puts "target: #{self.url}"
-    data = redis.get(url)
+    data = redis.hget(url, locale)
     if data.nil?
       data = Hash.new { |h,k| h[k] = {} }
+
+      agent = Mechanize.new do |a|
+        a.user_agent_alias = "iPhone"
+        a.request_headers = {
+          'accept-language' => "#{locale}, en",
+          'accept-encoding' => 'utf-8, us-ascii'
+        }
+      end
+
       page = agent.get(url)
       #agent.page.encoding = 'utf-8'
       sum = page.header["content-length"].to_i
@@ -29,13 +38,14 @@ class Site < ActiveRecord::Base
       }
 
       # data = { content-type => { url => length }}
-      page.search("//img/@src").each{|img|
+      page.images.map(&:url).uniq.each{|img_url|
         begin
-          image_header = agent.head(img.value)
+          puts img_url
+          image_header = agent.head(img_url)
           next if image_header["content-type"].blank? || image_header["content-length"].blank?
           content_length = image_header["content-length"].to_i
           content_type = image_header["content-type"]
-          data[content_type][URI.parse(img.value).path] = content_length
+          data[content_type][Addressable::URI.parse(img_url).path] = content_length
           sum += content_length if content_type =~ /image/
         rescue Exception => e
           p e
@@ -54,8 +64,9 @@ class Site < ActiveRecord::Base
           p e
         end
       }
-      redis.set(
+      redis.hset(
         url,
+        locale,
         {
           data: data,
           sum: sum
@@ -69,12 +80,6 @@ class Site < ActiveRecord::Base
 
   def redis
     @redis ||= Redis.new
-  end
-
-  def agent
-   @agent ||= Mechanize.new do |a|
-     a.user_agent_alias = "iPhone"
-   end
   end
 
 end
