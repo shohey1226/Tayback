@@ -35,6 +35,7 @@ set :repo_url, 'https://github.com/shohey1226/Tayback.git'
 # set :keep_releases, 5
 
 set :sidekiq_role, :web
+set :sidekiq_config, "#{current_path}/config/sidekiq.yml"
 
 namespace :deploy do
 
