@@ -37,8 +37,13 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 # gem 'unicorn'
 
 # Use Capistrano for deployment
-gem 'capistrano-rails', group: :development
-gem 'capistrano-rvm', group: :development
+
+group :development do
+  gem 'capistrano-rails'
+  gem 'capistrano-rvm'
+  gem 'capistrano-service'
+  gem 'capistrano-sidekiq'
+end
 
 # Sidekiq for async processing
 gem 'sidekiq'

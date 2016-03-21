@@ -45,4 +45,7 @@ namespace :deploy do
     end
   end
 
+  #after :publishing, 'service:nginx:restart', 'service:unicorn:restart'
+  after :publishing, 'service:unicorn:restart'  
+
 end

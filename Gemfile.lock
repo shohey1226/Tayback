@@ -56,6 +56,11 @@ GEM
     capistrano-rvm (0.1.2)
       capistrano (~> 3.0)
       sshkit (~> 1.2)
+    capistrano-service (0.0.2)
+      capistrano (>= 3.0.0.pre)
+    capistrano-sidekiq (0.5.4)
+      capistrano
+      sidekiq (>= 3.4)
     coderay (1.1.0)
     coffee-rails (4.1.1)
       coffee-script (>= 2.2.0)
@@ -237,6 +242,8 @@ DEPENDENCIES
   addressable
   capistrano-rails
   capistrano-rvm
+  capistrano-service
+  capistrano-sidekiq
   coffee-rails (~> 4.1.0)
   devise
   jbuilder (~> 2.0)
