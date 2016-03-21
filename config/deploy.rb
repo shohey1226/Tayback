@@ -34,6 +34,8 @@ set :repo_url, 'https://github.com/shohey1226/Tayback.git'
 # Default value for keep_releases is 5
 # set :keep_releases, 5
 
+set :sidekiq_role, :web
+
 namespace :deploy do
 
   after :restart, :clear_cache do
@@ -46,6 +48,6 @@ namespace :deploy do
   end
 
   #after :publishing, 'service:nginx:restart', 'service:unicorn:restart'
-  after :publishing, 'service:unicorn:restart'  
+  after :publishing, 'service:unicorn:restart'
 
 end
