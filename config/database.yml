@@ -23,6 +23,9 @@ test:
 production:
   adapter: postgresql
   encoding: unicode
+  database: Tayback_production
+  username: rails
+  password: <%= begin IO.read("~/.db") rescue "" end  %>
   # For details on connection pooling, see rails configuration guide
   # http://guides.rubyonrails.org/configuring.html#database-pooling
   pool: 5
