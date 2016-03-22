@@ -14,7 +14,7 @@ class Api::Me::SitesController < ApiController
   # Create Site if it doesn't exist
   def create
     url = params[:url]
-    url.sub(/(\/)+$/, '')
+    url.sub!(/(\/)+$/, '')
     if uri?(url)
       begin
         site = Site.find_or_create_by(url: url, locale: current_user.locale)
