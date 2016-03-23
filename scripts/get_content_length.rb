@@ -3,10 +3,26 @@ require 'nokogiri'
 
 agent = Mechanize.new
 agent.user_agent_alias = "iPhone"
-url = "http://m.yahoo.co.jp"
+#url = "http://m.yahoo.co.jp"
+url = "https://global-step.jp"
 
 page = agent.get(url)
 agent.page.encoding = 'utf-8'
+
+doc = Nokogiri::HTML(page.content.toutf8)
+children = doc.css('*')
+# children.each do |child|
+#     puts child[:class]
+# end
+css_classes = []
+children.each{|child|
+  css_classes += child[:class].to_s.split(/\s+/)
+}
+css_classes.uniq!.sort!
+puts css_classes
+
+exit
+
 
 # contet-length is byte
 # 1kbps 125bytes/s
