@@ -2,12 +2,36 @@ class Api::Me::SitesController < ApiController
   before_action :set_api_user_blocker, only: [:update ]
 
   # GET /api/me/sites
+  # get default URLs
   def index
-    urls = current_user.get_urls()
+    urls = current_user.get_urls()  # get 50 URLs with user's locale
     render json: {
-      message: "getting URLs completed successfully",
+      message: "Get URLs successfully",
       data: urls
     }
+  end
+
+  # get image/script url and size from Redis server
+  def show
+    if params[:url].present?
+      site = Site.find_by(url: params[:url], locale: current_user.locale)
+      if site.present?
+        contents = site.get_contents
+        render json: {
+          message: "Get the contents of  #{params[:url]} successfully",
+          data: contents
+        }
+      else
+        render json: {
+          error: "#{prams[:url]} doesn't exist",
+        }, status: 404
+      end
+    else
+      render json: {
+        error: "Require url",
+      }, status: 401
+    end
+
   end
 
   # POST /api/me/sites

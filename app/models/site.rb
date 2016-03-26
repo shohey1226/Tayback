@@ -6,6 +6,37 @@ class Site < ActiveRecord::Base
     self.blockers.where(id: blocker_id).count
   end
 
+  def get_contents
+    contents =  JSON.parse(redis.hget(self.url, self.locale))
+    data = {}
+    data['scripts'] = []
+    data['images'] = []
+    if contents.present?
+      contents["data"].each{|type, obj|
+        if type =~ /javascript/
+          obj.sort_by{|k, v| v }.reverse.each{|url, size|
+            data['scripts'].push({
+              url: url,
+              size: size
+            })
+          }
+        elsif type =~ /image/
+          obj.sort_by{|k, v| v }.reverse.each{|url, size|
+            data['images'].push({
+              url: url,
+              size: size
+            })
+          }
+        elsif type == "css"
+          data['css-class'] = obj["class"]
+        end
+      }
+      data
+    else
+      {}
+    end
+  end
+
   def scrape(locale)
     puts "target: #{self.url}"
     data = redis.hget(url, locale)
@@ -30,7 +61,7 @@ class Site < ActiveRecord::Base
           next if script_header["content-type"].blank? || script_header["content-length"].blank?
           content_length = script_header["content-length"].to_i
           content_type = script_header["content-type"]
-          data[content_type][URI.parse(script_src.value).path] = content_length
+          data[content_type][script_src.value] = content_length
           sum += content_length if content_type =~ /script/
         rescue Exception => e
           p e
@@ -45,25 +76,52 @@ class Site < ActiveRecord::Base
           next if image_header["content-type"].blank? || image_header["content-length"].blank?
           content_length = image_header["content-length"].to_i
           content_type = image_header["content-type"]
-          data[content_type][Addressable::URI.parse(img_url).path] = content_length
+          data[content_type][img_url] = content_length
           sum += content_length if content_type =~ /image/
         rescue Exception => e
           p e
         end
       }
 
-      page.search("//link/@href").each{|style_href|
-        begin
-          style_header = agent.head(style_href.value)
-          next if style_header["content-type"].blank? || style_header["content-length"].blank?
-          content_length = style_header["content-length"].to_i
-          content_type = style_header["content-type"]
-          data[content_type][URI.parse(style_href.value).path] = content_length
-          sum += content_length if content_type =~ /css/
-        rescue Exception => e
-          p e
+      # Obtain CSS classes for display-none
+      page.search("//img/@src").each{|img|
+        css_classes = []
+        img.ancestors.each{|anc|
+          classes = anc[:class].to_s.split(/\s+/)
+          if classes.size > 0
+            css_classes += classes
+          end
+        }
+        if css_classes.size > 0
+          css_classes.uniq!
         end
+        data["css-class"][img.value] = css_classes
       }
+
+      # doc = Nokogiri::HTML(page.content.toutf8)
+      # children = doc.css('*')
+      # css_classes = []
+      # children.each{|child|
+      #   css_classes += child[:class].to_s.split(/\s+/)
+      # }
+      # css_classes.uniq!.sort!
+      # data["css"]["class"] = css_classes
+
+
+      # Style is needed. Just block JS and Image for now
+      # page.search("//link/@href").each{|style_href|
+      #   begin
+      #     style_header = agent.head(style_href.value)
+      #     next if style_header["content-type"].blank? || style_header["content-length"].blank?
+      #     content_length = style_header["content-length"].to_i
+      #     content_type = style_header["content-type"]
+      #     data[content_type][URI.parse(style_href.value).path] = content_length
+      #     sum += content_length if content_type =~ /css/
+      #   rescue Exception => e
+      #     p e
+      #   end
+      # }
+
       redis.hset(
         url,
         locale,
