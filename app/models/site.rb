@@ -27,8 +27,8 @@ class Site < ActiveRecord::Base
               size: size
             })
           }
-        elsif type == "css"
-          data['css-class'] = obj["class"]
+        elsif type == "css-class"
+          data['css-class'] = obj
         end
       }
       data
@@ -98,14 +98,14 @@ class Site < ActiveRecord::Base
         data["css-class"][img.value] = css_classes
       }
 
-      # doc = Nokogiri::HTML(page.content.toutf8)
-      # children = doc.css('*')
-      # css_classes = []
-      # children.each{|child|
-      #   css_classes += child[:class].to_s.split(/\s+/)
-      # }
-      # css_classes.uniq!.sort!
-      # data["css"]["class"] = css_classes
+      doc = Nokogiri::HTML(page.content.toutf8)
+      children = doc.css('*')
+      css_classes = []
+      children.each{|child|
+        css_classes += child[:class].to_s.split(/\s+/)
+      }
+      css_classes.uniq!.sort!
+      data["css-class"]["all"] = css_classes
 
 
       # Style is needed. Just block JS and Image for now
