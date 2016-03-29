@@ -34,18 +34,20 @@ class Blocker < ActiveRecord::Base
           }
         elsif self.file?
           site["data"].each{|key, value|
-            value.each{|u, size|
-              if self.upper_limit < size
-                rule.push({
-                  "action" => {
-                    "type" => "block"
-                  },
-                  "trigger" => {
-                    "url-filter" => u
-                  }
-                })
-              end
-            }
+            if key =~ /script/
+              value.each{|u, size|
+                if self.upper_limit < size
+                  rule.push({
+                    "action" => {
+                      "type" => "block"
+                    },
+                    "trigger" => {
+                      "url-filter" => u
+                    }
+                  })
+                end
+              }
+            end
           }
         end
       end

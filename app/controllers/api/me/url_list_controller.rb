@@ -48,7 +48,11 @@ class Api::Me::UrlListController < ApiController
           title: blocker.title,
           rule: blocker.generate_rule(site.url, current_user.locale),
           count: site.blocker_count(blocker.id),
-          owner: blocker.user
+          owner: {
+            id: blocker.user.id,
+            username: blocker.user.username,
+            locale: blocker.user.locale
+          }
         },
       }
     end
