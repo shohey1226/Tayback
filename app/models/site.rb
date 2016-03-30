@@ -104,7 +104,7 @@ class Site < ActiveRecord::Base
       children.each{|child|
         css_classes += child[:class].to_s.split(/\s+/)
       }
-      css_classes.uniq!.sort!
+      css_classes.uniq!.sort! if css_classes.size > 0
       data["css-class"]["all"] = css_classes
 
 
