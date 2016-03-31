@@ -16,7 +16,18 @@ class Api::Me::BlockersController < ApiController
     if blocker.present?
       render json: {
         message: "updating blocker completed successfully",
-        data: blocker
+        data: {
+          id: blocker.id,
+          title: blocker.title,
+          rule: blocker.rule,
+          # *only upadate required one and return it
+          # count: site.blocker_count(blocker.id),
+          # owner: {
+          #   id: blocker.user.id,
+          #   username: blocker.user.username,
+          #   locale: blocker.user.locale
+          # }
+        }
       }
     else
       render json: {
