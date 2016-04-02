@@ -41,6 +41,7 @@ class Api::Me::UrlListController < ApiController
         message: "site not found",
       }, status: 404
     else
+      owner = blocker.user.present? ? { id: blocker.user.id, username: blocker.user.username, locale: blocker.user.locale } : nil
       render json: {
         message: "completed successfully",
         data: {
@@ -48,11 +49,7 @@ class Api::Me::UrlListController < ApiController
           title: blocker.title,
           rule: blocker.generate_rule(site.url, current_user.locale),
           count: site.blocker_count(blocker.id),
-          owner: {
-            id: blocker.user.id,
-            username: blocker.user.username,
-            locale: blocker.user.locale
-          }
+          owner: owner
         },
       }
     end
