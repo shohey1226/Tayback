@@ -38,13 +38,13 @@ class Api::Me::BlockersController < ApiController
 
   # DELETE /api/me/blockers
   def destroy
-    if current_user.delete_blocker_relation(blocker_params[:id])
+    if current_user.delete_blocker_relation(params[:id])
       render json: {
-        message: "Deleting blocker(ID:#{blocker_params[:id]}) completed successfully",
+        message: "Deleting blocker(ID:#{params[:id]}) completed successfully",
       }
     else
       render json: {
-        error: "Failed to delete blocker(ID:#{blocker_params[:id]})",
+        error: "Failed to delete blocker(ID:#{params[:id]})",
       }, status: 404
     end
   end
