@@ -96,10 +96,7 @@ class Site < ActiveRecord::Base
           css_classes += classes
         end
       }
-      if css_classes.size > 0
-        css_classes.uniq!
-      end
-      data["css-class"][img.value] = css_classes
+      data["css-class"][img.value] = css_classes.uniq.sort
     }
 
     doc = Nokogiri::HTML(page.content.toutf8)
@@ -108,8 +105,7 @@ class Site < ActiveRecord::Base
     children.each{|child|
       css_classes += child[:class].to_s.split(/\s+/)
     }
-    css_classes.uniq!.sort! if css_classes.size > 0
-    data["css-class"]["all"] = css_classes
+    data["css-class"]["all"] = css_classes.uniq.sort
 
 
     # Style is needed. Just block JS and Image for now
