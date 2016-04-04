@@ -1,9 +1,9 @@
 class SizeScraper
   include Sidekiq::Worker
   sidekiq_options queue: :sidekiq
-  def perform(site_id, locale)
+  def perform(site_id)
     logger.info "Run scraping.."
     site = Site.find(site_id)
-    site.scrape(locale)
+    site.scrape
   end
 end

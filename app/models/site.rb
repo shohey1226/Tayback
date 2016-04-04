@@ -37,101 +37,105 @@ class Site < ActiveRecord::Base
     end
   end
 
-  def scrape(locale)
+  def scrape
     puts "target: #{self.url}"
-    data = redis.hget(url, locale)
-    if data.nil?
-      data = Hash.new { |h,k| h[k] = {} }
+    #data = redis.hget(url, self.locale)
 
-      agent = Mechanize.new do |a|
-        a.user_agent_alias = "iPhone"
-        a.request_headers = {
-          'accept-language' => "#{locale}, en",
-          'accept-encoding' => 'utf-8, us-ascii'
-        }
-      end
+    data = Hash.new { |h,k| h[k] = {} }
 
-      page = agent.get(url)
-      #agent.page.encoding = 'utf-8'
-      sum = page.header["content-length"].to_i
-
-      page.search("//script/@src").each{|script_src|
-        begin
-          script_header = agent.head(script_src.value)
-          next if script_header["content-type"].blank? || script_header["content-length"].blank?
-          content_length = script_header["content-length"].to_i
-          content_type = script_header["content-type"]
-          data[content_type][script_src.value] = content_length
-          sum += content_length if content_type =~ /script/
-        rescue Exception => e
-          p e
-        end
+    agent = Mechanize.new do |a|
+      a.user_agent_alias = "iPhone"
+      a.request_headers = {
+        'accept-language' => "#{self.locale}, en",
+        'accept-encoding' => 'utf-8, us-ascii'
       }
-
-      # data = { content-type => { url => length }}
-      page.images.map(&:url).uniq.each{|img_url|
-        begin
-          puts img_url
-          image_header = agent.head(img_url)
-          next if image_header["content-type"].blank? || image_header["content-length"].blank?
-          content_length = image_header["content-length"].to_i
-          content_type = image_header["content-type"]
-          data[content_type][img_url] = content_length
-          sum += content_length if content_type =~ /image/
-        rescue Exception => e
-          p e
-        end
-      }
-
-      # Obtain CSS classes for display-none
-      page.search("//img/@src").each{|img|
-        css_classes = []
-        img.ancestors.each{|anc|
-          classes = anc[:class].to_s.split(/\s+/)
-          if classes.size > 0
-            css_classes += classes
-          end
-        }
-        if css_classes.size > 0
-          css_classes.uniq!
-        end
-        data["css-class"][img.value] = css_classes
-      }
-
-      doc = Nokogiri::HTML(page.content.toutf8)
-      children = doc.css('*')
-      css_classes = []
-      children.each{|child|
-        css_classes += child[:class].to_s.split(/\s+/)
-      }
-      css_classes.uniq!.sort! if css_classes.size > 0
-      data["css-class"]["all"] = css_classes
-
-
-      # Style is needed. Just block JS and Image for now
-      # page.search("//link/@href").each{|style_href|
-      #   begin
-      #     style_header = agent.head(style_href.value)
-      #     next if style_header["content-type"].blank? || style_header["content-length"].blank?
-      #     content_length = style_header["content-length"].to_i
-      #     content_type = style_header["content-type"]
-      #     data[content_type][URI.parse(style_href.value).path] = content_length
-      #     sum += content_length if content_type =~ /css/
-      #   rescue Exception => e
-      #     p e
-      #   end
-      # }
-
-      redis.hset(
-        url,
-        locale,
-        {
-          data: data,
-          sum: sum
-        }.to_json
-      )
-      #redis.expire(url, 60*60)
     end
+
+    page = agent.get(url)
+
+    # Update title
+    self.update(title: page.title)
+
+    #agent.page.encoding = 'utf-8'
+    sum = page.header["content-length"].to_i
+
+    page.search("//script/@src").each{|script_src|
+      begin
+        script_header = agent.head(script_src.value)
+        next if script_header["content-type"].blank? || script_header["content-length"].blank?
+        content_length = script_header["content-length"].to_i
+        content_type = script_header["content-type"]
+        data[content_type][script_src.value] = content_length
+        sum += content_length if content_type =~ /script/
+      rescue Exception => e
+        p e
+      end
+    }
+
+    # data = { content-type => { url => length }}
+    page.images.map(&:url).uniq.each{|img_url|
+      begin
+        puts img_url
+        image_header = agent.head(img_url)
+        next if image_header["content-type"].blank? || image_header["content-length"].blank?
+        content_length = image_header["content-length"].to_i
+        content_type = image_header["content-type"]
+        data[content_type][img_url] = content_length
+        sum += content_length if content_type =~ /image/
+      rescue Exception => e
+        p e
+      end
+    }
+
+    # Obtain CSS classes for display-none
+    page.search("//img/@src").each{|img|
+      css_classes = []
+      img.ancestors.each{|anc|
+        classes = anc[:class].to_s.split(/\s+/)
+        if classes.size > 0
+          css_classes += classes
+        end
+      }
+      if css_classes.size > 0
+        css_classes.uniq!
+      end
+      data["css-class"][img.value] = css_classes
+    }
+
+    doc = Nokogiri::HTML(page.content.toutf8)
+    children = doc.css('*')
+    css_classes = []
+    children.each{|child|
+      css_classes += child[:class].to_s.split(/\s+/)
+    }
+    css_classes.uniq!.sort! if css_classes.size > 0
+    data["css-class"]["all"] = css_classes
+
+
+    # Style is needed. Just block JS and Image for now
+    # page.search("//link/@href").each{|style_href|
+    #   begin
+    #     style_header = agent.head(style_href.value)
+    #     next if style_header["content-type"].blank? || style_header["content-length"].blank?
+    #     content_length = style_header["content-length"].to_i
+    #     content_type = style_header["content-type"]
+    #     data[content_type][URI.parse(style_href.value).path] = content_length
+    #     sum += content_length if content_type =~ /css/
+    #   rescue Exception => e
+    #     p e
+    #   end
+    # }
+
+    redis.hdel(url, self.locale);
+    redis.hset(
+    url,
+    self.locale,
+    {
+      data: data,
+      sum: sum
+    }.to_json
+    )
+    #redis.expire(url, 60*60)
   end
 
   private

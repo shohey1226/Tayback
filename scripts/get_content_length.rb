@@ -5,9 +5,13 @@ agent = Mechanize.new
 agent.user_agent_alias = "iPhone"
 #url = "http://m.yahoo.co.jp"
 url = "https://global-step.jp"
-
 page = agent.get(url)
 agent.page.encoding = 'utf-8'
+
+puts page.title
+puts page.host
+
+exit
 
 # doc = Nokogiri::HTML(page.content.toutf8)
 # children = doc.css('*')
