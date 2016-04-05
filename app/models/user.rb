@@ -16,7 +16,6 @@ class User < ActiveRecord::Base
 
   def get_urls
     urls = Site.where(locale: self.locale).order('count DESC').limit(50)
-    .map{|site| { url: site.url } }
     if urls.blank?
       []
     else
@@ -128,6 +127,7 @@ class User < ActiveRecord::Base
       }
       {
         url: site_user.site.url,
+        title: site_user.site.title,
         count: site_user.site.count,
         blockerList: blocker_list,
       }
