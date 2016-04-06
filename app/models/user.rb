@@ -75,8 +75,6 @@ class User < ActiveRecord::Base
     end
   end
 
-
-
   def find_or_create_blocker(blocker_params)
     blocker = blocker_params[:id].present? ? Blocker.find_by_id(blocker_params[:id]) : nil
     if blocker.blank?
@@ -122,7 +120,10 @@ class User < ActiveRecord::Base
           title: blocker.title,
           rule: JSON.parse(blocker.generate_rule(site_user.site.url, self.locale)),
           count: site_user.site.blocker_count(blocker.id),
-          owner: blocker.owner,
+          owner: {
+            id: blocker.user.id,
+            username: blocker.user.username,
+            locale: block.user.locale,
         }
       }
       {
