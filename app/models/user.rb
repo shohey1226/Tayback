@@ -123,7 +123,8 @@ class User < ActiveRecord::Base
           owner: {
             id: blocker.user.id,
             username: blocker.user.username,
-            locale: block.user.locale,
+            locale: block.user.locale
+          }
         }
       }
       {
