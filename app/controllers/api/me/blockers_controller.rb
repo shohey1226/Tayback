@@ -10,6 +10,49 @@ class Api::Me::BlockersController < ApiController
     }
   end
 
+  def create
+    blocker = nil
+    site = nil
+    begin
+      ActiveRecord::Base.transaction do
+        blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], user_id: current_user.id)
+        site = Site.find_or_create_by!(url: site_params[:url], locale: current_user.locale)
+        site.increment!(:count)
+        current_user.make_blocker_site_relation(blocker, site)
+      end
+    rescue => e
+      puts e.message
+      render json: {
+        error: "failed the action"
+      }, status: 401
+    end
+
+    if blocker.nil?
+      render json: {
+        message: "blocker not found",
+      }, status: 404
+    elsif site.nil?
+      render json: {
+        message: "site not found",
+      }, status: 404
+    else
+      render json: {
+        message: "completed successfully",
+        data: {
+          id: blocker.id,
+          title: blocker.title,
+          rule: blocker.generate_rule(site.url, current_user.locale),
+          count: site.blocker_count(blocker.id),
+          owner: {
+            id: blocker.user.id,
+            username: blocker.user.username,
+            locale: blocker.user.locale
+          }
+        },
+      }
+    end
+  end
+
   # PUT /api/me/blockers
   def update
     blocker = current_user.update_blocker(blocker_params)
@@ -20,7 +63,7 @@ class Api::Me::BlockersController < ApiController
           id: blocker.id,
           title: blocker.title,
           rule: blocker.rule,
-          # *only upadate required one and return it
+          ## *only upadate required one and return it
           # count: site.blocker_count(blocker.id),
           # owner: {
           #   id: blocker.user.id,
@@ -58,6 +101,10 @@ class Api::Me::BlockersController < ApiController
     # Never trust parameters from the scary internet, only allow the white list through.
     def blocker_params
       params.require(:blocker).permit(:id, :title, :rule, :user_id)
+    end
+
+    def site_params
+      params.require(:site).permit(:url)
     end
 
 end
