@@ -115,16 +115,13 @@ class User < ActiveRecord::Base
       blocker_ids = self.blocker_users.where(site: site_user.site).map(&:blocker_id)
       # to keep the order, use the below
       blocker_list = Blocker.where(id: blocker_ids).index_by(&:id).values_at(*blocker_ids).map{|blocker|
+        owner = blocker.user.present? ? { id: blocker.user.id, username: blocker.user.username, locale: block.user.local } : nil
         {
           id: blocker.id,
           title: blocker.title,
           rule: JSON.parse(blocker.generate_rule(site_user.site.url, self.locale)),
           count: site_user.site.blocker_count(blocker.id),
-          owner: {
-            id: blocker.user.id,
-            username: blocker.user.username,
-            locale: block.user.locale
-          }
+          owner: owner
         }
       }
       {
