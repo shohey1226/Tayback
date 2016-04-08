@@ -1,4 +1,4 @@
-class Api::Me::SitesController < ApiController
+class Api::SitesController < ApiController
   before_action :set_api_user_blocker, only: [:update ]
 
   # GET /api/me/sites

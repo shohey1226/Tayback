@@ -12,12 +12,10 @@ Rails.application.routes.draw do
   end
 
   namespace :api do
-    namespace :me do
-      resources :blockers, only: [:index, :destroy, :create, :update ]
-      resources :sites, only: [ :index, :create ]
-      get 'site' => 'sites#show'
-      resources :url_list, only: [ :create ]
-    end
+    resources :blockers, only: [:index, :destroy, :create, :update ]
+    resources :sites, only: [ :index, :create ] 
+    get 'site' => 'sites#show'  # get image/script url and size from Redis server
+    put 'blocker_sites' => 'blocker_sites#update' # update counts and timestamp
   end
 
   # The priority is based upon order of creation: first created -> highest priority.

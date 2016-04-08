@@ -11,7 +11,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160208004202) do
+ActiveRecord::Schema.define(version: 20160406232552) do
+
+  create_table "blocker_sites", force: :cascade do |t|
+    t.integer  "site_id"
+    t.integer  "blocker_id"
+    t.integer  "count",      default: 0
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
+
+  add_index "blocker_sites", ["blocker_id"], name: "index_blocker_sites_on_blocker_id"
+  add_index "blocker_sites", ["site_id"], name: "index_blocker_sites_on_site_id"
 
   create_table "blocker_users", force: :cascade do |t|
     t.integer  "user_id"
@@ -30,10 +41,8 @@ ActiveRecord::Schema.define(version: 20160208004202) do
     t.string   "title"
     t.text     "rule"
     t.integer  "user_id"
-    t.integer  "upper_limit"
-    t.integer  "rule_type",   default: 0
-    t.datetime "created_at",              null: false
-    t.datetime "updated_at",              null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_index "blockers", ["user_id"], name: "index_blockers_on_user_id"

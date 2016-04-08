@@ -6,10 +6,4 @@ Blocker.create!([
   {title: "Block all images, fonts and scripts", rule: "[{\"action\":{\"type\":\"block\"},\"trigger\":{\"url-filter\":\".*\",\"resource-type\":[\"image\",\"font\",\"script\"]}}]", user_id: nil},
   {title: "Block all from third-party", rule: "[{\"action\":{\"type\":\"block\"},\"trigger\":{\"url-filter\":\".*\",\"load-type\":[\"third-party\"]}}]", user_id: nil},
   {title: "Block all from third-party and images", rule: "[{\"action\":{\"type\":\"block\"},\"trigger\":{\"url-filter\":\".*\",\"load-type\":\"third-party\"}},{\"action\":{\"type\":\"block\"},\"trigger\":{\"url-filter\":\".*\",\"resource-type\":[\"image\"]}}]", user_id: nil},
-  {title: "Block >10KB images", rule: nil, rule_type: 1, upper_limit: 10000, user_id: nil},
-  {title: "Block >5KB images", rule: nil, rule_type: 1, upper_limit: 50000, user_id: nil},
-  {title: "Block >100KB images", rule: nil, rule_type: 1, upper_limit: 100000, user_id: nil},
-  {title: "Block >10KB files", rule: nil, rule_type: 2, upper_limit: 10000, user_id: nil},
-  {title: "Block >50KB files", rule: nil, rule_type: 2, upper_limit: 50000, user_id: nil},
-  {title: "Block >100KB files", rule: nil, rule_type: 2, upper_limit: 100000, user_id: nil},
 ])

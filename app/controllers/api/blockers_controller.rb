@@ -1,94 +1,100 @@
 class Api::BlockersController < ApiController
-  before_action :set_api_blocker, only: [:show, :edit, :update, :destroy]
+  before_action :set_api_user_blocker, only: [:update ]
 
-  # GET /api/blockers
-  # GET /api/blockers.json
+  # GET /api/me/blockers
   def index
-    @api_blockers = Blocker.all
+    blockers = current_user.get_blockers(params[:url])
+    render json: {
+      message: "getting Blockers completed successfully",
+      data: blockers
+    }
   end
 
-  # GET /api/blockers/1
-  # GET /api/blockers/1.json
-  def show
-  end
-
-  # GET /api/blockers/new
-  def new
-    @api_blocker = Api::Blocker.new
-  end
-
-  # GET /api/blockers/1/edit
-  def edit
-  end
-
-  # POST /api/blockers
-  # POST /api/blockers.json
+  # Create a new blocker
   def create
-
+    blocker = nil
+    site = nil
     begin
       ActiveRecord::Base.transaction do
-        @blocker = Blocker.create!(api_blocker_params)
-        p @blocker
-        @site = site.find_or_create_by!(api_site_params)
-        p @site
-        @site.increment!(:count)
-        current_user.blockers << @api_blocker
-        current_user.sites << @site
-        BlockerUser.find_by(user: current_user, blocker: @blocker).update!()
+        blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], user_id: current_user.id)
+        site = Site.find_or_create_by!(url: site_params[:url], locale: current_user.locale)
+        current_user.make_blocker_site_relation(blocker, site) # create relation to site and user
       end
     rescue => e
-      p e
+      puts e.message
+      render json: {
+        error: "failed to create blocker "
+      }, status: 401
     end
 
-    @api_blocker = Blocker.new(api_blocker_params)
-    @site = site.find_or_create_by(api_site_params)
-
-    respond_to do |format|
-      if @api_site.save && @api_blocker.save && @api_site.increment(:count) && current_user.blockers << @api_blocker &&
-        format.json { render :show, status: :created, location: @api_blocker }
-      else
-        format.json { render json: @api_blocker.errors, status: :unprocessable_entity }
-      end
-    end
+    render json: {
+      message: "completed successfully",
+      data: {
+        id: blocker.id,
+        title: blocker.title,
+        rule: blocker.rule,
+        count: 0,
+        owner: {
+          id: current_user.id,
+          username: current_user.username,
+          locale: current_user.locale
+        }
+      },
+    }
 
   end
 
-  # PATCH/PUT /api/blockers/1
-  # PATCH/PUT /api/blockers/1.json
+  # PUT /api/me/blockers
   def update
-    respond_to do |format|
-      if @api_blocker.update(api_blocker_params)
-        format.html { redirect_to @api_blocker, notice: 'Blocker was successfully updated.' }
-        format.json { render :show, status: :ok, location: @api_blocker }
-      else
-        format.html { render :edit }
-        format.json { render json: @api_blocker.errors, status: :unprocessable_entity }
-      end
+    blocker = current_user.update_blocker(blocker_params)
+    if blocker.present?
+      render json: {
+        message: "updating blocker completed successfully",
+        data: {
+          id: blocker.id,
+          title: blocker.title,
+          rule: blocker.rule,
+          ## *only upadate required one and return it
+          # count: site.blocker_count(blocker.id),
+          # owner: {
+          #   id: blocker.user.id,
+          #   username: blocker.user.username,
+          #   locale: blocker.user.locale
+          # }
+        }
+      }
+    else
+      render json: {
+        error: "Failed to update blocker(ID:#{blocker_params[:id]})",
+      }, status: 404
     end
   end
 
-  # DELETE /api/blockers/1
-  # DELETE /api/blockers/1.json
+  # DELETE /api/me/blockers
   def destroy
-    @api_blocker.destroy
-    respond_to do |format|
-      format.html { redirect_to api_blockers_url, notice: 'Blocker was successfully destroyed.' }
-      format.json { head :no_content }
+    if current_user.delete_blocker_relation(params[:id])
+      render json: {
+        message: "Deleting blocker(ID:#{params[:id]}) completed successfully",
+      }
+    else
+      render json: {
+        error: "Failed to delete blocker(ID:#{params[:id]})",
+      }, status: 404
     end
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
-    def set_api_blocker
-      @api_blocker = Api::Blocker.find(params[:id])
+    def set_api_user_blocker
+      @blocker = Blocker.find(blocker_params[:id])
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
-    def api_blocker_params
-      params.require(:blocker).permit(:title, :rule, :created_by)
+    def blocker_params
+      params.require(:blocker).permit(:id, :title, :rule, :user_id)
     end
 
-    def api_site_params
+    def site_params
       params.require(:site).permit(:url)
     end
 

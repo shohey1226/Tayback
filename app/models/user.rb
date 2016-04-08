@@ -8,7 +8,7 @@ class User < ActiveRecord::Base
          :authentication_keys => [:login]
 
   has_many :site_users
-  has_many :sites, :through => :site_users
+  has_many :sites, -> { order 'site_users.accessed_at desc' }, :through => :site_users
   has_many :blocker_users
   has_many :blockers, :through => :blocker_users
 
@@ -28,25 +28,19 @@ class User < ActiveRecord::Base
     blockers = []
     if site.present?
       blocker_ids = []
-      blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id) + Blocker.where.not(rule_type: 0).map(&:id)
+      blocker_ids = BlockerUser.where(site: site).limit(50).map(&:blocker_id)
       blocker_ids.uniq!
       blockers = Blocker.where(id: blocker_ids).includes(:user).map{|blocker|
-        rule = blocker.generate_rule(url, self.locale)
-        next if rule.nil?
         {
           id: blocker.id,
           title: blocker.title,
-          rule: blocker.generate_rule(url, self.locale),
+          rule: blocker.rule,
           count: site.blocker_count(blocker.id),
           owner: blocker.user,
         }
       } if blocker_ids.present? && blocker_ids.count > 0
 
-      #
-
-
     end
-
 
     # # add default blockers if it's not included yet
     # default_blocker_ids = [1,2,3]
@@ -75,27 +69,39 @@ class User < ActiveRecord::Base
     end
   end
 
-  def find_or_create_blocker(blocker_params)
-    blocker = blocker_params[:id].present? ? Blocker.find_by_id(blocker_params[:id]) : nil
-    if blocker.blank?
-      blocker = Blocker.create!(title: blocker_params[:title], rule: blocker_params[:rule], user_id: self.id)
-    end
-    return blocker
-  end
-
-  def find_or_create_site(site_params)
-    site = site_params[:url].present? ? Site.find_by(url: site_params[:url], locale: self.locale) : nil
-    unless site.present?
-      site = Site.create!(url: site_params[:url], locale: self.locale)
-    end
-    return site
-  end
-
+  # Executed when a new blocker is created
   def make_blocker_site_relation(blocker, site)
     self.sites << site if self.sites.find_by_id(site.id).blank?
-    self.site_users.find_by(site: site).update!(accessed_at: Time.now)
-    self.blockers << blocker if self.blockers.find_by_id(blocker.id).blank?
-    self.blocker_users.find_by(blocker: blocker).update!(used_at: Time.now, site: site)
+    BlockerUser.create!(user: self, blocker: blocker, site: site)
+    BlockerSite.create!(blocker: blocker, site: site)
+  end
+
+  # Executed when a user open url with blocker
+  # create the relation if it doesn't exist
+  def update_count_and_timestamp!(blocker, site)
+    site.increment!(:count)
+    now = Time.now
+
+    site_user = self.site_users.find_by(site: site)
+    if site_user.present?
+      site_user.update!(accessed_at: now)
+    else
+      SiteUser.create!(user: self, blocker: blocker, site: site, accessed_at: now)
+    end
+
+    blocker_user = self.blocker_users.find_by(blocker: blocker)
+    if blocker_user.present?
+      blocker_user.update!(used_at: now)
+    else
+      BlockerUser.create!(user: self, blocker: blocker, site: site, used_at: now)
+    end
+
+    blocker_site = BlockerSite.find_by(blocker: blocker, site: site)
+    if blocker_site.present?
+      blocker_site.increment!(:count)
+    else
+      BlockerSite.create!(blocker: blocker, site: site, count: 1)
+    end
   end
 
   # update only if it's mine
@@ -109,28 +115,28 @@ class User < ActiveRecord::Base
     end
   end
 
+  # Get my UrlList
   def url_list
-    self.site_users.map{|site_user|
-      next if site_user.site.locale != self.locale
-      blocker_ids = self.blocker_users.where(site: site_user.site).map(&:blocker_id)
-      # to keep the order, use the below
-      blocker_list = Blocker.where(id: blocker_ids).index_by(&:id).values_at(*blocker_ids).map{|blocker|
+    self.sites.where(locale: self.locale).limit(50).map{|site|
+      blocker_list = self.blocker_users.where(site: site).order('used_at desc').limit(50).map{|blocker_user|
+        blocker = blocker_user.blocker
+        # owner can be nil when it's default
         owner = blocker.user.present? ? { id: blocker.user.id, username: blocker.user.username, locale: blocker.user.locale } : nil
         {
           id: blocker.id,
           title: blocker.title,
-          rule: JSON.parse(blocker.generate_rule(site_user.site.url, self.locale)),
-          count: site_user.site.blocker_count(blocker.id),
+          rule: JSON.parse(blocker.rule),
+          count: BlockerSite.find_by(blocker: blocker, site: site).count,
           owner: owner
         }
       }
       {
-        url: site_user.site.url,
-        title: site_user.site.title,
-        count: site_user.site.count,
+        url: site.url,
+        title: site.title,
+        count: site.count,
         blockerList: blocker_list,
       }
-    }.compact
+    }.compact # remove nil for skipped by next
   end
 
   def self.find_first_by_auth_conditions(warden_conditions)
