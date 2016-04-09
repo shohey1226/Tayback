@@ -86,7 +86,7 @@ class User < ActiveRecord::Base
     if site_user.present?
       site_user.update!(accessed_at: now)
     else
-      SiteUser.create!(user: self, blocker: blocker, site: site, accessed_at: now)
+      SiteUser.create!(user: self, site: site, accessed_at: now)
     end
 
     blocker_user = self.blocker_users.find_by(blocker: blocker)
