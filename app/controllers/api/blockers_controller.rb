@@ -1,9 +1,10 @@
 class Api::BlockersController < ApiController
   before_action :set_api_user_blocker, only: [:update ]
 
-  # GET /api/me/blockers
+  # GET /api/blockers
+  # Get defaultBlockers with params[:url]
   def index
-    blockers = current_user.get_blockers(params[:url])
+    blockers = current_user.get_other_blockers(params[:url])
     render json: {
       message: "getting Blockers completed successfully",
       data: blockers
@@ -44,7 +45,7 @@ class Api::BlockersController < ApiController
 
   end
 
-  # PUT /api/me/blockers
+  # PUT /api/blockers
   def update
     blocker = current_user.update_blocker(blocker_params)
     if blocker.present?
