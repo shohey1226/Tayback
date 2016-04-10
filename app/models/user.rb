@@ -25,22 +25,24 @@ class User < ActiveRecord::Base
   end
 
   # get blockers which is created by other users
-  # this deoesn't include user's blocker list
+  # this deoesn't include user's blocker list but includes default(user is nil ) blockers
   def get_other_blockers(url)
     site = Site.find_by(locale: self.locale, url: url)
     if site.present?
       my_blocker_ids = self.blocker_users.where(site: site).order('used_at desc').limit(50).map{|bu| bu.blocker.id}
       other_blocker_ids = BlockerSite.where(site: site).order('count desc').limit(50).reject{|bs|
-        bs.blocker.user.blank? || ( bs.blocker.user.present? && bs.blocker.user.id == self.id)
+         bs.blocker.user.present? && bs.blocker.user.id == self.id
       }.map{|bs| bs.blocker.id }
-      blocker_ids = other_blocker_ids - my_blocker_ids
+      default_blocker_ids = Blocker.where(user: nil).map(&:id)
+      blocker_ids = other_blocker_ids + default_blocker_ids - my_blocker_ids
       Blocker.where(id: blocker_ids).map{|blocker|
+        owner = blocker.user.nil? ? nil : { id: blocker.user.id, username: blocker.user.username, locale: blocker.user.locale }
         {
           id: blocker.id,
           title: blocker.title,
           rule: blocker.rule,
-          count: site.blocker_count(bs.blocker.id),
-          owner: { id: blocker.user.id, username: blocker.user.username, locale: blocker.user.locale }
+          count: site.blocker_count(blocker.id),
+          owner: owner
         }
       }
     else
