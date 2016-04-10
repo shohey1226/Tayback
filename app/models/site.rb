@@ -1,6 +1,8 @@
 class Site < ActiveRecord::Base
   has_many :blocker_users
   has_many :blockers, through: :blocker_users
+  has_many :site_users
+  has_many :users, through: :site_users
 
   def blocker_count(blocker_id)
     self.blockers.where(id: blocker_id).count

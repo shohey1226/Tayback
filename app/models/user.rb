@@ -15,7 +15,8 @@ class User < ActiveRecord::Base
   attr_accessor :login
 
   def get_urls
-    urls = Site.where(locale: self.locale).order('count DESC').limit(50)
+    my_site_ids = self.sites.map(&:id) # exclude urls in my url_list
+    urls = Site.where(locale: self.locale).where.not(id: my_site_ids).order('count DESC').limit(50)
     if urls.blank?
       []
     else
@@ -75,7 +76,10 @@ class User < ActiveRecord::Base
 
   # Executed when a new blocker is created
   def make_blocker_site_relation(blocker, site)
-    self.sites << site if self.sites.find_by_id(site.id).blank?
+    if self.sites.find_by_id(site.id).blank?
+      SiteUser.create!(site: site, user: self)
+      site.update!(count: site.users.count)
+    end
     BlockerUser.create!(user: self, blocker: blocker, site: site)
     BlockerSite.create!(blocker: blocker, site: site)
   end
@@ -83,7 +87,7 @@ class User < ActiveRecord::Base
   # Executed when a user open url with blocker
   # create the relation if it doesn't exist
   def update_count_and_timestamp!(blocker, site)
-    site.increment!(:count)
+
     now = Time.now
 
     site_user = self.site_users.find_by(site: site)
@@ -91,6 +95,7 @@ class User < ActiveRecord::Base
       site_user.update!(accessed_at: now)
     else
       SiteUser.create!(user: self, site: site, accessed_at: now)
+      site.update!(count: site.users.count)
     end
 
     blocker_user = self.blocker_users.find_by(blocker: blocker)
