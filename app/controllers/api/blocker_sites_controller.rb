@@ -16,7 +16,8 @@ class Api::BlockerSitesController < ApiController
       }, status: 401
     end
     render json: {
-      message: "Updated count and timestamp successfully"
+      message: "Updated count and timestamp successfully",
+      data: current_user.url_list
     }
   end
 

@@ -1,5 +1,7 @@
 class Blocker < ActiveRecord::Base
   belongs_to :user
+  has_many :blocker_sites
+  has_many :sites, through: :blocker_sites
 
   def owner
     self.user
