@@ -34,7 +34,7 @@ class Api::BlockersController < ApiController
         id: blocker.id,
         title: blocker.title,
         rule: blocker.rule,
-        count: 0,
+        count: 1,
         owner: {
           id: current_user.id,
           username: current_user.username,

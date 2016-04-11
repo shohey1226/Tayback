@@ -41,7 +41,7 @@ class User < ActiveRecord::Base
           id: blocker.id,
           title: blocker.title,
           rule: blocker.rule,
-          count: site.blocker_count(blocker.id),
+          count: site.blocker_count(blocker),
           owner: owner
         }
       }
@@ -83,7 +83,7 @@ class User < ActiveRecord::Base
       site.update!(count: site.users.count)
     end
     BlockerUser.create!(user: self, blocker: blocker, site: site)
-    BlockerSite.create!(blocker: blocker, site: site)
+    BlockerSite.create!(blocker: blocker, site: site, count: 1)
   end
 
   # Executed when a user open url with blocker
@@ -97,8 +97,8 @@ class User < ActiveRecord::Base
       site_user.update!(accessed_at: now)
     else
       SiteUser.create!(user: self, site: site, accessed_at: now)
-      site.update!(count: site.users.count)
     end
+    site.update!(count: site.users.count)
 
     blocker_user = self.blocker_users.find_by(blocker: blocker, site: site)
     if blocker_user.present?
@@ -108,11 +108,10 @@ class User < ActiveRecord::Base
     end
 
     blocker_site = BlockerSite.find_by(blocker: blocker, site: site)
-    if blocker_site.present?
-      blocker_site.increment!(:count)
-    else
-      BlockerSite.create!(blocker: blocker, site: site, count: 1)
+    if blocker_site.blank?
+      BlockerSite.create!(blocker: blocker, site: site)
     end
+    blocker_site.update!(count: BlockerUser.where(blocker: blocker, site: site).count)
   end
 
   # update only if it's mine
@@ -137,7 +136,7 @@ class User < ActiveRecord::Base
           id: blocker.id,
           title: blocker.title,
           rule: JSON.parse(blocker.rule),
-          count: BlockerSite.find_by(blocker: blocker, site: site).count,
+          count: site.blocker_count(blocker),
           owner: owner
         }
       }

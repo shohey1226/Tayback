@@ -4,8 +4,13 @@ class Site < ActiveRecord::Base
   has_many :site_users
   has_many :users, through: :site_users
 
-  def blocker_count(blocker_id)
-    self.blockers.where(id: blocker_id).count
+  def blocker_count(blocker)
+    bs = BlockerSite.find_by(blocker: blocker, site: site)
+    if bs.nil?
+      0
+    else
+      bs.count
+    end
   end
 
   def get_contents
