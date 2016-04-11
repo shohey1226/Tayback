@@ -5,7 +5,7 @@ class Site < ActiveRecord::Base
   has_many :users, through: :site_users
 
   def blocker_count(blocker)
-    bs = BlockerSite.find_by(blocker: blocker, site: site)
+    bs = BlockerSite.find_by(blocker: blocker, site: self)
     if bs.nil?
       0
     else
