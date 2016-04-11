@@ -100,7 +100,7 @@ class User < ActiveRecord::Base
       site.update!(count: site.users.count)
     end
 
-    blocker_user = self.blocker_users.find_by(blocker: blocker)
+    blocker_user = self.blocker_users.find_by(blocker: blocker, site: site)
     if blocker_user.present?
       blocker_user.update!(used_at: now)
     else
