@@ -109,7 +109,7 @@ class User < ActiveRecord::Base
 
     blocker_site = BlockerSite.find_by(blocker: blocker, site: site)
     if blocker_site.blank?
-      BlockerSite.create!(blocker: blocker, site: site)
+      blocker_site = BlockerSite.create!(blocker: blocker, site: site)
     end
     blocker_site.update!(count: BlockerUser.where(blocker: blocker, site: site).count)
   end
